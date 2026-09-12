@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DRAGO</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2304070A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%2300E5FF' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%2300E5FF'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2304070A'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%2300E5FF' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%2300E5FF'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#04070A;
+    --panel:#081722;
+    --panel-2:#0B1F2B;
+    --line:#12394A;
+    --cyan:#00E5FF;
+    --blue:#0A84FF;
+    --text:#D6EFFF;
+    --text-dim:#4C7A8C;
+    --danger:#FF4D5E;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(900px 500px at 50% 0%, #0A2230 0%, transparent 65%),
+      repeating-linear-gradient(0deg, rgba(0,229,255,0.025) 0px, rgba(0,229,255,0.025) 1px, transparent 1px, transparent 34px),
+      repeating-linear-gradient(90deg, rgba(0,229,255,0.025) 0px, rgba(0,229,255,0.025) 1px, transparent 1px, transparent 34px),
+      var(--void);
+    color:var(--text);
+    font-family:'Rajdhani',sans-serif;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  header{
+    padding:22px 20px 12px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border-bottom:1px solid var(--line);
+  }
+  .ring-mark{width:34px;height:34px;flex:none;}
+  header h1{
+    font-family:'Orbitron',sans-serif;
+    font-weight:800;
+    font-size:19px;
+    margin:0;
+    letter-spacing:0.12em;
+    color:var(--cyan);
+    text-shadow:0 0 14px rgba(0,229,255,0.5);
+  }
+  header p{
+    margin:2px 0 0;
+    font-size:12px;
+    color:var(--text-dim);
+    letter-spacing:0.04em;
+  }
+  #chat{
+    flex:1;
+    overflow-y:auto;
+    padding:16px 16px 12px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    scroll-behavior:smooth;
+  }
+  .empty{
+    margin:auto;
+    text-align:center;
+    color:var(--text-dim);
+    max-width:280px;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .empty strong{color:var(--cyan);font-weight:600;}
+  .msg{
+    max-width:84%;
+    padding:11px 15px;
+    font-size:15px;
+    line-height:1.45;
+    white-space:pre-wrap;
+    font-weight:500;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(0,229,255,0.05), rgba(0,229,255,0.01));
+    clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  }
+  .msg.user{
+    align-self:flex-end;
+    border-color:rgba(0,229,255,0.45);
+    color:var(--text);
+  }
+  .msg.assistant{
+    align-self:flex-start;
+    border-color:var(--line);
+    color:var(--text);
+  }
+  .msg.assistant.loading{color:var(--text-dim);}
+  footer{
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);
+  }
+  .status{
+    text-align:center;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--text-dim);
+    min-height:16px;
+    margin-bottom:10px;
+  }
+  .status.live{color:var(--cyan);}
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  #textInput{
+    flex:1;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:12px 14px;
+    color:var(--text);
+    font-family:'Rajdhani',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    outline:none;
+  }
+  #textInput::placeholder{color:var(--text-dim);}
+  #textInput:focus{border-color:var(--cyan);}
+  #sendBtn{
+    width:44px;height:44px;flex:none;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--text-dim);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .mic-wrap{
+    position:relative;
+    width:68px;height:68px;flex:none;
+  }
+  .mic-wrap svg.ring{
+    position:absolute;top:0;left:0;width:68px;height:68px;
+    pointer-events:none;
+  }
+  .mic-wrap svg.ring.outer{animation:spin 6s linear infinite;opacity:0.55;}
+  .mic-wrap svg.ring.inner{animation:spin 4s linear infinite reverse;opacity:0.35;}
+  .mic-wrap.listening svg.ring.outer{animation-duration:1.6s;opacity:0.9;}
+  .mic-wrap.listening svg.ring.inner{animation-duration:1s;opacity:0.7;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  #micBtn{
+    position:absolute;top:9px;left:9px;
+    width:50px;height:50px;
+    border-radius:50%;
+    border:1px solid var(--cyan);
+    background:radial-gradient(circle at 35% 30%, #0E3A4A, #061319);
+    box-shadow:0 0 18px rgba(0,229,255,0.35), inset 0 0 12px rgba(0,229,255,0.2);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  #micBtn svg{width:22px;height:22px;}
+  .setup{
+    margin:14px 16px 0;
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:14px 16px;
+    font-size:13.5px;
+    color:var(--text-dim);
+    line-height:1.55;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+  }
+  .setup strong{color:var(--cyan);}
+  .setup.hidden{display:none;}
+  .setup button{
+    margin-top:10px;
+    background:none;
+    border:1px solid var(--cyan);
+    color:var(--cyan);
+    padding:7px 14px;
+    font-family:'Rajdhani',sans-serif;
+    font-weight:600;
+    letter-spacing:0.05em;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .setup input{
+    width:100%;padding:9px 12px;border:1px solid var(--line);background:var(--void);color:var(--text);font-size:13px;font-family:'Rajdhani',sans-serif;
+  }
+  ::-webkit-scrollbar{width:0;}
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="ring-mark" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="20" fill="none" stroke="#00E5FF" stroke-width="1.5" opacity="0.5"/>
+    <circle cx="32" cy="32" r="13" fill="none" stroke="#00E5FF" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="4.5" fill="#00E5FF"/>
+  </svg>
+  <div>
+    <h1>DRAGO</h1>
+    <p>sistema de asistencia personal · en línea</p>
+  </div>
+</header>
+
+<div class="setup" id="setupBox">
+  Para activarme necesito tu clave de la API de Anthropic (se guarda solo en este teléfono).
+  Consíguela en <strong>console.anthropic.com</strong> → API Keys.
+  <br><br>
+  <input id="apiKeyInput" type="password" placeholder="sk-ant-...">
+  <button onclick="saveKey()">ACTIVAR</button>
+</div>
+
+<div id="chat">
+  <div class="empty" id="emptyState">
+    <strong>En espera.</strong><br>
+    Habla o escribe una instrucción. Tareas, dudas, recordatorios — lo que necesites.
+  </div>
+</div>
+
+<footer>
+  <div class="status" id="status"></div>
+  <div class="controls">
+    <input id="textInput" type="text" placeholder="Instrucción..." onkeydown="if(event.key==='Enter')sendText()">
+    <button id="sendBtn" onclick="sendText()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <div class="mic-wrap" id="micWrap">
+      <svg class="ring outer" viewBox="0 0 68 68"><circle cx="34" cy="34" r="32" fill="none" stroke="#00E5FF" stroke-width="1" stroke-dasharray="4 6"/></svg>
+      <svg class="ring inner" viewBox="0 0 68 68"><circle cx="34" cy="34" r="27" fill="none" stroke="#0A84FF" stroke-width="1" stroke-dasharray="2 5"/></svg>
+      <button id="micBtn" onclick="toggleListen()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#00E5FF" stroke-width="2" stroke-linecap="round">
+          <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+          <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</footer>
+
+<script>
+let apiKey = localStorage.getItem('drago_api_key') || '';
+let history = [];
+const chat = document.getElementById('chat');
+const statusEl = document.getElementById('status');
+const setupBox = document.getElementById('setupBox');
+const emptyState = document.getElementById('emptyState');
+const micWrap = document.getElementById('micWrap');
+
+if(apiKey){ setupBox.classList.add('hidden'); }
+
+function saveKey(){
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if(!val){ return; }
+  localStorage.setItem('drago_api_key', val);
+  apiKey = val;
+  setupBox.classList.add('hidden');
+  statusEl.textContent = 'SISTEMA ACTIVADO';
+  setTimeout(()=> statusEl.textContent = '', 2500);
+}
+
+function addMessage(role, text){
+  if(emptyState) emptyState.remove();
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+async function askDrago(userText){
+  if(!apiKey){
+    setupBox.classList.remove('hidden');
+    statusEl.textContent = 'ACTIVA EL SISTEMA ARRIBA';
+    return;
+  }
+  addMessage('user', userText);
+  history.push({role:'user', content: userText});
+  const loadingDiv = addMessage('assistant', 'Procesando...');
+  loadingDiv.classList.add('loading');
+  statusEl.textContent = '';
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: "Eres Drago, un sistema de asistencia personal con una personalidad tranquila, precisa y ligeramente formal -al estilo de un asistente de inteligencia artificial de ciencia ficcion-, para un estudiante llamado Drago que vive cerca de Villa Hidalgo, Mexico, y a veces tiene internet limitado. Responde siempre en espanol mexicano. Se directo y util, sin relleno innecesario, pero cercano. Ayudale con tareas escolares, dudas, organizacion, y lo que pida. Manten las respuestas breves y claras, ideales para leerse o escucharse en voz alta en un celular.",
+        messages: history
+      })
+    });
+    const data = await response.json();
+    loadingDiv.remove();
+
+    if(data.error){
+      addMessage('assistant', 'ERROR: ' + (data.error.message || 'no se pudo conectar con la API.'));
+      statusEl.textContent = 'Revisa tu clave de API si el error persiste.';
+      history.pop();
+      return;
+    }
+
+    const textBlock = data.content.find(b => b.type === 'text');
+    const reply = textBlock ? textBlock.text : '(sin respuesta)';
+    addMessage('assistant', reply);
+    history.push({role:'assistant', content: reply});
+    speak(reply);
+  }catch(err){
+    loadingDiv.remove();
+    addMessage('assistant', 'CONEXION FALLIDA. Revisa tu internet e intenta de nuevo.');
+    history.pop();
+  }
+}
+
+function sendText(){
+  const input = document.getElementById('textInput');
+  const val = input.value.trim();
+  if(!val) return;
+  input.value = '';
+  askDrago(val);
+}
+
+// Voz: reconocimiento
+let recognition = null;
+let listening = false;
+const micBtn = document.getElementById('micBtn');
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(SpeechRecognition){
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-MX';
+  recognition.interimResults = false;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    listening = true;
+    micWrap.classList.add('listening');
+    statusEl.textContent = 'ESCUCHANDO';
+    statusEl.classList.add('live');
+  };
+  recognition.onend = () => {
+    listening = false;
+    micWrap.classList.remove('listening');
+    statusEl.classList.remove('live');
+    if(statusEl.textContent === 'ESCUCHANDO') statusEl.textContent = '';
+  };
+  recognition.onerror = (e) => {
+    statusEl.textContent = e.error === 'not-allowed' ? 'PERMITE EL MICROFONO' : 'NO SE ENTENDIO, INTENTA DE NUEVO';
+  };
+  recognition.onresult = (e) => {
+    const said = e.results[0][0].transcript;
+    askDrago(said);
+  };
+} else {
+  micBtn.style.opacity = '0.4';
+}
+
+function toggleListen(){
+  if(!recognition){
+    statusEl.textContent = 'TU NAVEGADOR NO SOPORTA VOZ';
+    return;
+  }
+  if(listening){
+    recognition.stop();
+  } else {
+    window.speechSynthesis.cancel();
+    recognition.start();
+  }
+}
+
+// Voz: respuesta hablada
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'es-MX';
+  utter.rate = 1.02;
+  const voices = window.speechSynthesis.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es'));
+  if(esVoice) utter.voice = esVoice;
+  window.speechSynthesis.speak(utter);
+}
+</script>
+</body>
+</html>
